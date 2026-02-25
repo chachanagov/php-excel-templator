@@ -254,13 +254,13 @@ class ReferenceHelper
      */
     protected function adjustProtectedCells(Worksheet $worksheet, $beforeCellAddress, $numberOfColumns, $numberOfRows): void
     {
-        $aProtectedCells = $worksheet->getProtectedCells();
+        $aProtectedCells = $worksheet->getProtectedCellRanges();
         ($numberOfColumns > 0 || $numberOfRows > 0) ?
             uksort($aProtectedCells, self::cellReverseSort(...)) : uksort($aProtectedCells, self::cellSort(...));
         foreach ($aProtectedCells as $key => $value) {
             $newReference = $this->updateCellReference($key, $beforeCellAddress, $numberOfColumns, $numberOfRows);
             if ($key != $newReference) {
-                $worksheet->protectCells($newReference, $value, true);
+                $worksheet->protectCells($newReference, $value->getPassword(), true);
                 $worksheet->unprotectCells($key);
             }
         }
@@ -464,7 +464,7 @@ class ReferenceHelper
                     $conditionalStyles = $worksheet->conditionalStylesExists($coordinate) ?
                         $worksheet->getConditionalStyles($coordinate) : false;
                     for ($j = $beforeColumn; $j <= $beforeColumn - 1 + $numberOfColumns; ++$j) {
-                        $worksheet->getCellByColumnAndRow($j, $i)->setXfIndex($xfIndex);
+                        $worksheet->getCell([$j, $i])->setXfIndex($xfIndex);
                         if ($conditionalStyles) {
                             $cloned = [];
                             foreach ($conditionalStyles as $conditionalStyle) {
@@ -604,9 +604,9 @@ class ReferenceHelper
         }
 
         // Update workbook: define names
-        if (count($worksheet->getParent()->getDefinedNames()) > 0) {
-            foreach ($worksheet->getParent()->getDefinedNames() as $definedName) {
-                if ($definedName->getWorksheet() !== null && $definedName->getWorksheet()->getHashCode() === $worksheet->getHashCode()) {
+        if (count($worksheet->getParent()?->getDefinedNames()) > 0) {
+            foreach ($worksheet->getParent()?->getDefinedNames() as $definedName) {
+                if ($definedName->getWorksheet() !== null && $definedName->getWorksheet() === $worksheet) {
                     $definedName->setValue($this->updateCellReference($definedName->getValue(), $beforeCellAddress, $numberOfColumns, $numberOfRows));
                 }
             }
