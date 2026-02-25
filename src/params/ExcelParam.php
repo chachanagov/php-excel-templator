@@ -24,7 +24,7 @@ class ExcelParam
 	 * @param mixed $value
 	 * @param callable|null $callback
 	 */
-	public function __construct(string $setterClass, $value, callable $callback=null)
+	public function __construct(string $setterClass, mixed $value, ?callable $callback=null)
 	{
 		$this->setterClass = $setterClass;
 		$this->value       = $value;
